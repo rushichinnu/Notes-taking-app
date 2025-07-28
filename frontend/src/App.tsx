@@ -12,6 +12,7 @@ import Login from "./components/Login";
 import OTPVerification from "./components/OTPVerification";
 import Dashboard from "./components/Dashboard";
 import "./index.css";
+import bg_image from "./assets/bg_img.jpg";
 
 const AuthPage: React.FC = () => {
   const [currentView, setCurrentView] = useState<"login" | "signup" | "otp">(
@@ -20,12 +21,11 @@ const AuthPage: React.FC = () => {
   const [signupUserId, setSignupUserId] = useState<string>("");
 
   const handleSignupSuccess = (pendingUserId: string) => {
-    setSignupUserId(pendingUserId); // Store the pendingUserId
+    setSignupUserId(pendingUserId);
     setCurrentView("otp");
   };
 
-  const backgroundImage =
-    "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><defs><pattern id='grain' patternUnits='userSpaceOnUse' width='100' height='100'><circle cx='25' cy='25' r='20' fill='%23001f3f' opacity='0.1'/><circle cx='75' cy='75' r='25' fill='%23001f3f' opacity='0.08'/></pattern></defs><rect width='100' height='100' fill='url(%23grain)'/></svg>";
+  const backgroundImage = bg_image;
 
   return (
     <div className="min-h-screen flex">
@@ -49,7 +49,7 @@ const AuthPage: React.FC = () => {
       </div>
 
       {/* Right Side - Blue Wave Design */}
-      <div className="hidden lg:block flex-1 relative overflow-hidden">
+      <div className="hidden lg:block flex-1 relative rounded-l-2xl overflow-hidden pt-4 pb-4 pr-4">
         <div
           className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500"
           style={{ backgroundImage: `url("${backgroundImage}")` }}
