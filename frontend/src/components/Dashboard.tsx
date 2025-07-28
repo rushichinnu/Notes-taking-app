@@ -51,7 +51,6 @@ const Dashboard: React.FC = () => {
   };
 
   const handleViewNote = (note: Note) => {
-    console.log("🔍 Opening note with ID:", note.id);
     setSelectedNote(note);
     setShowViewModal(true);
     setIsEditing(false);
@@ -77,8 +76,6 @@ const Dashboard: React.FC = () => {
       toast.error("Please fill in both title and content");
       return;
     }
-
-    console.log("🔍 Saving note with ID:", selectedNote.id);
 
     setIsSaving(true);
     try {
@@ -300,7 +297,7 @@ const Dashboard: React.FC = () => {
                       <Edit3 className="w-4 h-4" />
                       <span>Edit</span>
                     </button>
-                    {/* Outer X - Only show in VIEW mode */}
+
                     <button
                       onClick={closeViewModal}
                       className="text-gray-600 hover:text-gray-800"
@@ -325,7 +322,6 @@ const Dashboard: React.FC = () => {
                       <X className="w-4 h-4" />
                       <span>Cancel</span>
                     </button>
-                    {/* No outer X in EDIT mode - prevents confusion */}
                   </>
                 )}
               </div>

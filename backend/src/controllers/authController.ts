@@ -41,7 +41,6 @@ export const signup = async (req: Request, res: Response) => {
     if (existingPendingUser) {
       // Delete the existing pending user to allow retry
       await PendingUser.findByIdAndDelete(existingPendingUser._id);
-      console.log("🗑️ Removed existing pending user for retry");
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -55,21 +54,15 @@ export const signup = async (req: Request, res: Response) => {
       otpExpires,
     });
 
-    console.log("📝 Creating passwordless pending user:", { email, name });
     const savedPendingUser = await pendingUser.save();
-    console.log("✅ Pending user saved successfully:", savedPendingUser._id);
 
     // Send OTP email
     try {
-      console.log("🔄 Attempting to send OTP email...");
-      console.log("📧 Sending to:", email);
       await sendOTPEmail(email, otp);
-      console.log("📧 OTP email sent successfully to:", email);
     } catch (emailError: any) {
       console.error("❌ Email sending failed with error:", emailError.message);
       console.error("❌ Full error details:", emailError);
       // Show OTP in console as backup
-      console.log(`⭐ Backup OTP for ${email}: ${otp}`);
     }
 
     res.status(201).json({
@@ -95,8 +88,6 @@ export const verifyOTP = async (req: Request, res: Response) => {
         .json({ message: "Invalid or expired signup session" });
     }
 
-    console.log("✅ Found pending user:", pendingUser.email);
-
     // Verify OTP
     if (
       pendingUser.otp !== otp ||
@@ -116,20 +107,17 @@ export const verifyOTP = async (req: Request, res: Response) => {
         .json({ message: "User already exists with this email" });
     }
 
-    // NOW create the actual verified user in main User collection (passwordless)
+    // NOW create the actual verified user in main User collection
     const user = new User({
       email: pendingUser.email,
       name: pendingUser.name,
-      isVerified: true, // User is verified upon creation
-      // No password field - completely passwordless
+      isVerified: true,
     });
 
     const savedUser = await user.save();
-    console.log("✅ Passwordless user created and verified:", savedUser._id);
 
     // Clean up pending user data
     await PendingUser.findByIdAndDelete(pendingUserId);
-    console.log("🗑️ Cleaned up pending user data");
 
     // Generate JWT token
     const token = generateToken(savedUser._id.toString());
@@ -158,34 +146,23 @@ export const login = async (req: Request, res: Response) => {
 
     const { email, password } = req.body;
 
-    console.log("🔍 Looking for user:", email);
     const user = (await User.findOne({ email })) as typeof User.prototype & {
       _id: any;
     };
 
     if (!user) {
-      console.log("❌ User not found in database");
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    console.log("✅ User found:", {
-      id: user._id,
-      email: user.email,
-      isVerified: user.isVerified,
-    });
-
     const passwordMatch = await user.comparePassword(password);
-    console.log("🔐 Password match:", passwordMatch);
 
     if (!passwordMatch) {
-      console.log("❌ Password does not match");
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
     // Since we only create users after verification, this check is technically redundant
     // but keeping it for extra safety
     if (!user.isVerified) {
-      console.log("❌ User not verified");
       return res
         .status(400)
         .json({ message: "Please verify your email first" });
@@ -238,12 +215,10 @@ export const googleAuth = async (req: Request, res: Response) => {
         isVerified: true,
       }) as typeof User.prototype & { _id: any };
       await user.save();
-      console.log("✅ New Google user created:", user._id);
     } else if (!user.googleId) {
       user.googleId = googleId;
       user.isVerified = true;
       await user.save();
-      console.log("✅ Linked Google account to existing user:", user._id);
     }
 
     const jwtToken = generateToken(user._id.toString());
@@ -295,17 +270,12 @@ export const sendLoginOTP = async (req: Request, res: Response) => {
     user.otpExpires = otpExpires;
     await user.save();
 
-    console.log("📝 Generated login OTP for:", email);
-
     // Send OTP email
     try {
       console.log("🔄 Attempting to send login OTP email...");
       await sendOTPEmail(email, otp);
-      console.log("📧 Login OTP email sent successfully to:", email);
     } catch (emailError: any) {
       console.error("❌ Email sending failed:", emailError.message);
-      // Show OTP in console as backup
-      console.log(`⭐ Backup Login OTP for ${email}: ${otp}`);
     }
 
     res.json({
@@ -334,8 +304,6 @@ export const verifyLoginOTP = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid login session" });
     }
 
-    console.log("🔍 Verifying login OTP for:", user.email);
-
     // Verify OTP
     if (user.otp !== otp || !user.otpExpires || user.otpExpires < new Date()) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
@@ -345,8 +313,6 @@ export const verifyLoginOTP = async (req: Request, res: Response) => {
     user.otp = undefined;
     user.otpExpires = undefined;
     await user.save();
-
-    console.log("✅ Login OTP verified successfully for:", user.email);
 
     // Generate JWT token
     const token = generateToken(user._id.toString());
