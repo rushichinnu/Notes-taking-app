@@ -63,6 +63,8 @@ export const notesAPI = {
   getNotes: () => api.get<{ notes: Note[] }>("/notes"),
   createNote: (data: { title: string; content: string }) =>
     api.post<{ message: string; note: Note }>("/notes", data),
+  updateNote: (id: string, data: { title: string; content: string }) =>
+    api.put<{ message: string; note: Note }>(`/notes/${id}`, data),
   deleteNote: (id: string) => api.delete<{ message: string }>(`/notes/${id}`),
 };
 

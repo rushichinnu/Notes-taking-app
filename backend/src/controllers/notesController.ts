@@ -14,7 +14,16 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
       .sort({ createdAt: -1 })
       .select("title content createdAt updatedAt");
 
-    res.json({ notes });
+    // Transform _id to id for frontend consistency
+    const transformedNotes = notes.map((note) => ({
+      id: note._id.toString(),
+      title: note.title,
+      content: note.content,
+      createdAt: note.createdAt,
+      updatedAt: note.updatedAt,
+    }));
+
+    res.json({ notes: transformedNotes });
   } catch (error) {
     console.error("Get notes error:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -41,7 +50,7 @@ export const createNote = async (req: AuthRequest, res: Response) => {
     res.status(201).json({
       message: "Note created successfully",
       note: {
-        id: note._id,
+        id: note._id.toString(), // Convert _id to id
         title: note.title,
         content: note.content,
         createdAt: note.createdAt,
@@ -50,6 +59,42 @@ export const createNote = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error("Create note error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const updateNote = async (req: AuthRequest, res: Response) => {
+  try {
+    const { error } = noteSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    const { id } = req.params;
+    const { title, content } = req.body;
+
+    const note = await Note.findOne({ _id: id, userId: req.user._id });
+    if (!note) {
+      console.log("❌ Note not found for ID:", id);
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    note.title = title;
+    note.content = content;
+    await note.save();
+
+    res.json({
+      message: "Note updated successfully",
+      note: {
+        id: note._id.toString(), // Convert _id to id
+        title: note.title,
+        content: note.content,
+        createdAt: note.createdAt,
+        updatedAt: note.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Update note error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
