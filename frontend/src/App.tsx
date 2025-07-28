@@ -29,8 +29,9 @@ const AuthPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Form */}
+      {/* Left Side - Your EXACT Original Structure */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gray-50">
+        {/* Your Original Forms - Zero Changes */}
         {currentView === "login" && (
           <Login onSwitchToSignup={() => setCurrentView("signup")} />
         )}
@@ -48,8 +49,9 @@ const AuthPage: React.FC = () => {
         )}
       </div>
 
-      {/* Right Side - Blue Wave Design */}
-      <div className="hidden lg:block flex-1 relative rounded-l-2xl overflow-hidden pt-4 pb-4 pr-4">
+      {/* Right Side - Background Image */}
+      <div className="hidden lg:block flex-1 relative rounded-l-xl overflow-hidden">
+        {/* Background content stays the same */}
         <div
           className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500"
           style={{ backgroundImage: `url("${backgroundImage}")` }}
@@ -80,6 +82,21 @@ const AuthPage: React.FC = () => {
             </defs>
           </svg>
         </div>
+      </div>
+
+      {/* Title Overlays - Added OUTSIDE the form containers */}
+      {/* Desktop Title - Top Left */}
+      <div className="fixed top-8 left-8 hidden lg:block z-50">
+        <h1 className="text-2xl font-bold text-primary-600 select-none">
+          Notes
+        </h1>
+      </div>
+
+      {/* Mobile Title - Center Top */}
+      <div className="fixed top-6 left-1/2 transform -translate-x-1/2 lg:hidden z-50">
+        <h1 className="text-2xl font-bold text-primary-600 select-none">
+          Notes
+        </h1>
       </div>
     </div>
   );
